@@ -1,0 +1,89 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "An AWS Serverless Application.",
+
+  "Resources": {
+    "Entry": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "ParkingLot::ParkingLot.Function::AddNewCar",
+        "Runtime": "dotnetcore3.1",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Role": null,
+        "Policies": [ "AWSLambda_FullAccess", "IAMFullAccess", "AmazonAPIGatewayInvokeFullAccess", "AmazonDynamoDBFullAccess"],
+        "Events": {
+          "RootGet": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/entry",
+              "Method": "POST"
+            }
+          }
+        }
+      }
+    },
+      "Exit": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "ParkingLot::ParkingLot.Function::CarExit",
+        "Runtime": "dotnetcore3.1",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Role": null,
+        "Policies": [ "AWSLambda_FullAccess", "IAMFullAccess", "AmazonAPIGatewayInvokeFullAccess", "AmazonDynamoDBFullAccess"],
+        "Events": {
+          "RootGet": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/exit",
+              "Method": "POST"
+              }
+            }
+          }
+        }
+    },
+    "parkingListDynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "ParkingTable",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "TicketId",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "Plate",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "TicketId",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "Plate",
+            "KeyType": "RANGE"
+          }
+        ],
+
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": "1",
+          "WriteCapacityUnits": "1"
+        }
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "ApiURL": {
+      "Description": "API endpoint URL for Prod environment",
+      "Value": { "Fn::Sub": "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" }
+    }
+  }
+}
